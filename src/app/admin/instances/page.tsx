@@ -7,6 +7,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DataTable } from "@/components/ui/DataTable";
+import ConfirmModal from "@/components/ConfirmModal";
 
 interface OdooInstance {
     id: number;
@@ -27,6 +28,12 @@ export default function AdminInstances() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [actionLoading, setActionLoading] = useState<number | null>(null);
+    const [openActionId, setOpenActionId] = useState<number | null>(null);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const [pendingAction, setPendingAction] = useState<{ id: number; action: string } | null>(null);
+    const [confirmTitle, setConfirmTitle] = useState("");
+    const [confirmMessage, setConfirmMessage] = useState("");
     const router = useRouter();
 
     const fetchInstances = useCallback(async () => {
@@ -56,23 +63,58 @@ export default function AdminInstances() {
         checkAdmin();
     }, [fetchInstances, router]);
 
-    const handleAction = async (id: number, action: string) => {
-        const confirmMsg = action === 'DELETE'
-            ? "Êtes-vous sûr de vouloir supprimer cette instance ? Cette action est irréversible."
-            : `Voulez-vous vraiment ${action.toLowerCase()} cette instance ?`;
+    const openConfirmForAction = (id: number, action: string) => {
+        let title = "";
+        let message = "";
 
-        if (!confirm(confirmMsg)) return;
+        if (action === "DELETE") {
+            title = "Supprimer l'instance";
+            message =
+                "Êtes-vous sûr de vouloir supprimer cette instance Odoo ?\n\n" +
+                "Cette action est définitive et supprimera le conteneur et les données associées.";
+        } else if (action === "STOP") {
+            title = "Arrêter l'instance";
+            message =
+                "Voulez-vous vraiment arrêter cette instance Odoo ?\n\n" +
+                "Les utilisateurs ne pourront plus y accéder tant qu'elle n'est pas redémarrée.";
+        } else if (action === "START") {
+            title = "Démarrer l'instance";
+            message = "Voulez-vous démarrer cette instance Odoo maintenant ?";
+        } else if (action === "RESTART") {
+            title = "Redémarrer l'instance";
+            message =
+                "Voulez-vous redémarrer cette instance Odoo ?\n\n" +
+                "Un court arrêt de service pourra être perceptible.";
+        }
 
+        setPendingAction({ id, action });
+        setConfirmTitle(title);
+        setConfirmMessage(message);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmAction = async () => {
+        if (!pendingAction) return;
+        const { id, action } = pendingAction;
+
+        setConfirmLoading(true);
         setActionLoading(id);
         try {
-            const endpoint = action.toLowerCase() === 'delete' ? 'remove' : action.toLowerCase();
+            const endpoint = action.toLowerCase() === "delete" ? "remove" : action.toLowerCase();
             await api.post(`/instances/${id}/${endpoint}/`);
             await fetchInstances();
+            setConfirmOpen(false);
+            setPendingAction(null);
         } catch (e: any) {
             console.error(`Action ${action} failed`, e);
-            alert(`Erreur lors de l'action ${action}: ${e.response?.data?.error || "Une erreur est survenue"}`);
+            alert(
+                `Erreur lors de l'action ${action}: ${
+                    e.response?.data?.error || "Une erreur est survenue"
+                }`
+            );
         } finally {
             setActionLoading(null);
+            setConfirmLoading(false);
         }
     };
 
@@ -198,7 +240,7 @@ export default function AdminInstances() {
                         header: "Actions",
                         align: "right",
                         cell: (inst: OdooInstance) => (
-                            <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                            <div className="flex justify-end items-center gap-2">
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -207,22 +249,85 @@ export default function AdminInstances() {
                                 >
                                     🌐
                                 </Button>
-                                <div className="relative group/actions">
-                                    <Button variant="outline" size="sm" className="h-9 py-0 font-black text-[10px] tracking-widest hover:border-primary/50 transition-colors">
+                                {/* Wrapper du dropdown ACTIONS */}
+                                <div className={`relative ${openActionId === inst.id ? "z-[9999]" : "z-0"}`}>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenActionId(openActionId === inst.id ? null : inst.id);
+                                        }}
+                                        className="h-9 py-0 font-black text-[10px] tracking-widest hover:border-primary/50 transition-colors"
+                                    >
                                         ACTIONS
                                     </Button>
-                                    <div className="absolute right-0 top-full mt-1 hidden group-hover/actions:block z-50 bg-white dark:bg-slate-900 shadow-2xl rounded-2xl border border-slate-200 dark:border-slate-800 py-2 min-w-[160px] animate-in fade-in slide-in-from-top-2 duration-300 overflow-hidden before:content-[''] before:absolute before:inset-x-0 before:bottom-full before:h-2 before:bg-transparent">
-                                        <button onClick={(e) => { e.stopPropagation(); handleAction(inst.id, 'START'); }} className="w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 font-black transition-colors">▶ Démarrer</button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleAction(inst.id, 'STOP'); }} className="w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 font-black transition-colors">⏸ Arrêter</button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleAction(inst.id, 'RESTART'); }} className="w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-500/10 font-black transition-colors">🔄 Redémarrer</button>
-                                        <div className="h-px bg-slate-100 dark:bg-slate-800 my-1 mx-2"></div>
-                                        <button onClick={(e) => { e.stopPropagation(); handleAction(inst.id, 'DELETE'); }} className="w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 font-black transition-colors">🗑️ Supprimer</button>
-                                    </div>
+                                    {openActionId === inst.id && (
+                                        // Dropdown simple, sous le bouton, toujours au-dessus du reste
+                                        <div className="absolute right-0 top-full mt-1 z-[9999] bg-white dark:bg-slate-900 shadow-2xl rounded-2xl border border-slate-200 dark:border-slate-800 py-2 min-w-[160px] overflow-hidden">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOpenActionId(null);
+                                                    openConfirmForAction(inst.id, 'START');
+                                                }}
+                                                className="w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 font-black transition-colors"
+                                            >
+                                                ▶ Démarrer
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOpenActionId(null);
+                                                    openConfirmForAction(inst.id, 'STOP');
+                                                }}
+                                                className="w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 font-black transition-colors"
+                                            >
+                                                ⏸ Arrêter
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOpenActionId(null);
+                                                    openConfirmForAction(inst.id, 'RESTART');
+                                                }}
+                                                className="w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-500/10 font-black transition-colors"
+                                            >
+                                                🔄 Redémarrer
+                                            </button>
+                                            <div className="h-px bg-slate-100 dark:bg-slate-800 my-1 mx-2"></div>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOpenActionId(null);
+                                                    openConfirmForAction(inst.id, 'DELETE');
+                                                }}
+                                                className="w-full text-left px-5 py-2.5 text-[10px] uppercase tracking-widest text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 font-black transition-colors"
+                                            >
+                                                🗑️ Supprimer
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )
                     }
                 ]}
+            />
+            {/* Modal de confirmation pour les actions sur les instances */}
+            <ConfirmModal
+                open={confirmOpen}
+                title={confirmTitle}
+                message={confirmMessage}
+                loading={confirmLoading}
+                confirmLabel="Confirmer"
+                cancelLabel="Annuler"
+                onConfirm={handleConfirmAction}
+                onCancel={() => {
+                    if (confirmLoading) return;
+                    setConfirmOpen(false);
+                    setPendingAction(null);
+                }}
             />
         </div>
     );

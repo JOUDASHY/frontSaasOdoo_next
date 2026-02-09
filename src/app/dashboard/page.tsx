@@ -96,16 +96,16 @@ export default function Dashboard() {
                             </Button>
                         </div>
 
-                        <Card className="shadow-2xl shadow-slate-200/50 dark:shadow-none bg-white dark:bg-slate-900 border-none overflow-hidden">
+                        <Card className="shadow-md shadow-slate-200/40 dark:shadow-none bg-white dark:bg-slate-900 border-none overflow-hidden">
                             <CardContent className="p-0">
                                 {loadingInstances && instances.length === 0 ? (
-                                    <div className="p-20 text-center">
+                                    <div className="p-12 text-center">
                                         <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent mx-auto mb-4" />
                                         <p className="text-slate-500 font-bold animate-pulse text-sm">Initialisation des services...</p>
                                     </div>
                                 ) : instances.length === 0 ? (
-                                    <div className="p-16 text-center space-y-6">
-                                        <div className="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto shadow-inner text-4xl">
+                                    <div className="p-10 text-center space-y-4">
+                                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto shadow-inner text-3xl">
                                             🌩️
                                         </div>
                                         <div className="space-y-2">
@@ -117,7 +117,7 @@ export default function Dashboard() {
                                     </div>
                                 ) : (
                                     <div className="divide-y divide-slate-50 dark:divide-slate-800">
-                                        {instances.map((inst) => (
+                                        {instances.slice(0, 3).map((inst) => (
                                             <InstanceRow
                                                 key={inst.id}
                                                 instance={inst}

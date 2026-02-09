@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -69,12 +70,14 @@ export default function Register() {
 
                 <div className="relative z-10 flex flex-col justify-between p-12 w-full">
                     <Link href="/" className="flex items-center gap-3 w-fit group">
-                        <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white font-extrabold shadow-2xl shadow-primary/50 group-hover:scale-105 transition-transform">
-                            J
-                        </div>
-                        <span className="text-2xl font-black tracking-tight text-white uppercase">
-                            SysCOMD <span className="text-primary-light">SaaS</span>
-                        </span>
+                        <Image
+                            src="/syscomad-logo.png"
+                            alt="SYSCOMAD"
+                            width={180}
+                            height={48}
+                            className="object-contain group-hover:opacity-90 transition-opacity"
+                            priority
+                        />
                     </Link>
 
                     <div className="max-w-md">
@@ -115,12 +118,14 @@ export default function Register() {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-50 dark:bg-[#020617]">
                 <div className="w-full max-w-xl animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="lg:hidden flex items-center gap-3 mb-10">
-                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-extrabold shadow-lg shadow-primary/30">
-                            J
-                        </div>
-                        <span className="text-xl font-black tracking-tight dark:text-white uppercase">
-                            SysCOMD <span className="text-primary">SaaS</span>
-                        </span>
+                        <Image
+                            src="/syscomad-logo.png"
+                            alt="SYSCOMAD"
+                            width={160}
+                            height={40}
+                            className="object-contain"
+                            priority
+                        />
                     </div>
 
                     <div className="mb-10 text-center lg:text-left">

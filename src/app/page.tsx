@@ -12,7 +12,7 @@ export default function Home() {
           <img
             src="/syscomad-logo.png"
             alt="SYSCOMAD"
-            className="h-12 w-auto object-contain"
+            className="h-16 md:h-26 w-auto object-contain"
           />
         </div>
 

@@ -85,7 +85,7 @@ export default function PlansPage() {
                             </div>
                         </div>
 
-                        <ul className="space-y-4 mb-8 flex-1">
+                        <ul className="space-y-4 mb-6 flex-1">
                             <li className="flex items-center gap-3 text-gray-600 dark:text-gray-300">
                                 <span className="text-green-500 font-bold">✓</span>
                                 <span>{plan.max_users} Utilisateurs</span>
@@ -103,6 +103,29 @@ export default function PlansPage() {
                                 <span>Mises à jour incluses</span>
                             </li>
                         </ul>
+
+                        {/* Modules inclus dans le plan */}
+                        <div className="mb-8 text-left">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
+                                Modules inclus
+                            </p>
+                            {plan.allowed_modules && plan.allowed_modules.length > 0 ? (
+                                <div className="flex flex-wrap gap-2">
+                                    {plan.allowed_modules.map((m) => (
+                                        <span
+                                            key={m}
+                                            className="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-700 dark:text-gray-200"
+                                        >
+                                            {m}
+                                        </span>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-gray-400">
+                                    Aucun module fonctionnel inclus dans ce plan.
+                                </p>
+                            )}
+                        </div>
 
                         <button
                             onClick={() => handleSubscribe(plan.id)}

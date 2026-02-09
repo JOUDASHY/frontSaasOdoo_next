@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import ConfirmModal from "@/components/ConfirmModal";
 
 interface Payment {
     id: number;
@@ -19,6 +20,11 @@ interface Payment {
 export default function AdminPayments() {
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const [confirmTitle, setConfirmTitle] = useState("");
+    const [confirmMessage, setConfirmMessage] = useState("");
+    const [pendingAction, setPendingAction] = useState<{ id: number; type: "validate" | "reject" } | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -49,33 +55,43 @@ export default function AdminPayments() {
         }
     };
 
-    const handleValidatePayment = async (paymentId: number) => {
-        if (!confirm("Êtes-vous sûr de vouloir valider ce paiement ?")) {
-            return;
+    const openConfirm = (paymentId: number, type: "validate" | "reject") => {
+        if (type === "validate") {
+            setConfirmTitle("Valider le paiement");
+            setConfirmMessage(
+                "Êtes-vous sûr de vouloir valider ce paiement ?\n\n" +
+                "L'abonnement associé pourra être activé si le montant total est suffisant."
+            );
+        } else {
+            setConfirmTitle("Rejeter le paiement");
+            setConfirmMessage(
+                "Êtes-vous sûr de vouloir rejeter ce paiement ?\n\n" +
+                "Le client sera considéré comme non payé pour ce montant."
+            );
         }
-
-        try {
-            await api.post(`/payments/${paymentId}/validate_payment/`);
-            alert("Paiement validé avec succès !");
-            fetchPayments();
-        } catch (e: any) {
-            console.error("Failed to validate payment", e);
-            alert(e.response?.data?.detail || "Erreur lors de la validation du paiement.");
-        }
+        setPendingAction({ id: paymentId, type });
+        setConfirmOpen(true);
     };
 
-    const handleRejectPayment = async (paymentId: number) => {
-        if (!confirm("Êtes-vous sûr de vouloir rejeter ce paiement ?")) {
-            return;
-        }
+    const handleConfirmPayment = async () => {
+        if (!pendingAction) return;
+        const { id, type } = pendingAction;
 
+        setConfirmLoading(true);
         try {
-            await api.post(`/payments/${paymentId}/reject_payment/`);
-            alert("Paiement rejeté.");
-            fetchPayments();
+            const endpoint = type === "validate" ? "validate_payment" : "reject_payment";
+            await api.post(`/payments/${id}/${endpoint}/`);
+            await fetchPayments();
+            setConfirmOpen(false);
+            setPendingAction(null);
         } catch (e: any) {
-            console.error("Failed to reject payment", e);
-            alert(e.response?.data?.detail || "Erreur lors du rejet du paiement.");
+            console.error(`Failed to ${type} payment`, e);
+            alert(
+                e.response?.data?.detail ||
+                `Erreur lors de la ${type === "validate" ? "validation" : "rejection"} du paiement.`
+            );
+        } finally {
+            setConfirmLoading(false);
         }
     };
 
@@ -155,13 +171,13 @@ export default function AdminPayments() {
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex gap-2">
                                                         <button
-                                                            onClick={() => handleValidatePayment(payment.id)}
+                                                            onClick={() => openConfirm(payment.id, "validate")}
                                                             className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-bold rounded-lg transition-colors"
                                                         >
                                                             ✅ Valider
                                                         </button>
                                                         <button
-                                                            onClick={() => handleRejectPayment(payment.id)}
+                                                            onClick={() => openConfirm(payment.id, "reject")}
                                                             className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition-colors"
                                                         >
                                                             ❌ Rejeter
@@ -269,6 +285,21 @@ export default function AdminPayments() {
                     </div>
                 </div>
             </div>
+            {/* Modal de confirmation pour validation / rejet */}
+            <ConfirmModal
+                open={confirmOpen}
+                title={confirmTitle}
+                message={confirmMessage}
+                loading={confirmLoading}
+                confirmLabel="Confirmer"
+                cancelLabel="Annuler"
+                onConfirm={handleConfirmPayment}
+                onCancel={() => {
+                    if (confirmLoading) return;
+                    setConfirmOpen(false);
+                    setPendingAction(null);
+                }}
+            />
         </div>
     );
 }

@@ -23,6 +23,13 @@ export default function Sidebar({ isAdmin = false }: SidebarProps) {
             )
         },
         {
+            name: "Mes Instances", href: "/dashboard/instances", icon: (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                </svg>
+            )
+        },
+        {
             name: "Ma Souscription", href: "/dashboard/subscription", icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
             )
@@ -72,7 +79,7 @@ export default function Sidebar({ isAdmin = false }: SidebarProps) {
     const linkClass = (href: string) => {
         const isActive = pathname === href;
         return `flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 group ${isActive
-            ? "bg-primary text-white shadow-lg shadow-primary/30"
+            ? "bg-primary text-white"
             : "text-slate-500 hover:text-primary hover:bg-primary/5 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800/50"
             }`;
     };
@@ -81,11 +88,11 @@ export default function Sidebar({ isAdmin = false }: SidebarProps) {
         <aside className="fixed left-0 top-0 z-40 h-screen w-72 transition-transform -translate-x-full sm:translate-x-0 border-r border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl">
             <div className="flex flex-col h-full px-6 py-8">
                 {/* Logo Area */}
-                <div className="flex items-center gap-4 mb-12 px-2">
+                <div className=" items-center gap-4 mb-12 px-2">
                     <img
                         src="/syscomad-logo.png"
                         alt="SYSCOMAD"
-                        className="h-14 w-auto object-contain"
+                        className="h-28 w-auto object-contain"
                     />
                     <div>
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
@@ -139,7 +146,10 @@ export default function Sidebar({ isAdmin = false }: SidebarProps) {
                         <p className="relative z-10 text-white font-black text-sm mb-2">Besoin d'aide ?</p>
                         <p className="relative z-10 text-white/60 text-[10px] leading-relaxed mb-4 font-medium">Nos experts sont à votre disposition 24/7 pour vous accompagner.</p>
                         <Link href="mailto:support@jounaid-saas.com">
-                            <Button size="sm" className="w-full bg-white text-primary hover:bg-slate-100 font-black text-[10px] tracking-widest uppercase">
+                            <Button
+                                size="sm"
+                                className="w-full bg-white text-primary dark:text-primary hover:bg-slate-100 font-black text-[10px] tracking-widest uppercase"
+                            >
                                 Contacter Support
                             </Button>
                         </Link>

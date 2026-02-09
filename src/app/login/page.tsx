@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useGoogleLogin } from "@react-oauth/google";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/Button";
@@ -106,12 +107,14 @@ export default function Login() {
 
                 <div className="relative z-10 flex flex-col justify-between p-12 w-full">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white font-extrabold shadow-2xl shadow-primary/50">
-                            J
-                        </div>
-                        <span className="text-2xl font-black tracking-tight text-white uppercase">
-                            SysCOMD <span className="text-primary-light">SaaS</span>
-                        </span>
+                        <Image
+                            src="/syscomad-logo.png"
+                            alt="SYSCOMAD"
+                            width={180}
+                            height={48}
+                            className="object-contain"
+                            priority
+                        />
                     </div>
 
                     <div className="max-w-md">
@@ -137,17 +140,19 @@ export default function Login() {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-slate-50 dark:bg-[#020617]">
                 <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
                     <div className="lg:hidden flex items-center gap-3 mb-10">
-                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-extrabold shadow-lg shadow-primary/30">
-                            J
-                        </div>
-                        <span className="text-xl font-black tracking-tight dark:text-white uppercase transition-colors">
-                            SysCOMD <span className="text-primary">SaaS</span>
-                        </span>
+                        <Image
+                            src="/syscomad-logo.png"
+                            alt="SYSCOMAD"
+                            width={160}
+                            height={40}
+                            className="object-contain"
+                            priority
+                        />
                     </div>
 
                     <div className="mb-10 text-center lg:text-left">
                         <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight sm:text-4xl mb-3">
-                            Bon retour ! 👋
+                            Bon retour ! 
                         </h2>
                         <p className="text-slate-500 dark:text-slate-400 font-medium">
                             Accédez à votre espace sécurisé et gérez vos instances.
@@ -217,7 +222,7 @@ export default function Login() {
                                     type="button"
                                     onClick={() => handleGoogleLogin()}
                                     disabled={loading}
-                                    className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all font-bold text-slate-700 dark:text-white text-sm shadow-sm"
+                                    className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all font-bold text-slate-700 dark:text-white text-sm shadow-sm"
                                 >
                                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />

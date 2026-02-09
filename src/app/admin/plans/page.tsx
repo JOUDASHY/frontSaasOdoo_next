@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import { Badge } from "@/components/ui/Badge";
 import { DataTable } from "@/components/ui/DataTable";
 import { Button } from "@/components/ui/Button";
+import ConfirmModal from "@/components/ConfirmModal";
 
 interface Plan {
     id?: number;
@@ -34,6 +35,9 @@ export default function AdminPlans() {
         is_active: true
     });
     const [showModal, setShowModal] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmLoading, setConfirmLoading] = useState(false);
+    const [planToDelete, setPlanToDelete] = useState<Plan | null>(null);
     const router = useRouter();
 
     useEffect(() => {
@@ -87,14 +91,24 @@ export default function AdminPlans() {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm("Êtes-vous sûr de vouloir supprimer ce plan ?")) return;
+    const openDeleteConfirm = (plan: Plan) => {
+        setPlanToDelete(plan);
+        setConfirmOpen(true);
+    };
 
+    const handleConfirmDelete = async () => {
+        if (!planToDelete?.id) return;
+        setConfirmLoading(true);
         try {
-            await api.delete(`/plans/${id}/`);
-            fetchPlans();
+            await api.delete(`/plans/${planToDelete.id}/`);
+            await fetchPlans();
+            setConfirmOpen(false);
+            setPlanToDelete(null);
         } catch (e) {
             console.error("Delete error", e);
+            alert("Erreur lors de la suppression du plan.");
+        } finally {
+            setConfirmLoading(false);
         }
     };
 
@@ -219,7 +233,7 @@ export default function AdminPlans() {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => handleDelete(plan.id!)}
+                                    onClick={() => openDeleteConfirm(plan)}
                                     className="text-[10px] font-black tracking-widest px-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10"
                                 >
                                     🗑️
@@ -345,6 +359,27 @@ export default function AdminPlans() {
                     </div>
                 </div>
             )}
+
+            {/* Modal de confirmation pour suppression de plan */}
+            <ConfirmModal
+                open={confirmOpen}
+                title="Supprimer le plan"
+                message={
+                    planToDelete
+                        ? `Êtes-vous sûr de vouloir supprimer le plan "${planToDelete.name}" ?\n\n` +
+                          "Les abonnements existants continueront d'exister, mais ce plan ne sera plus disponible pour de nouveaux clients."
+                        : "Êtes-vous sûr de vouloir supprimer ce plan ?"
+                }
+                confirmLabel="Supprimer"
+                cancelLabel="Annuler"
+                loading={confirmLoading}
+                onConfirm={handleConfirmDelete}
+                onCancel={() => {
+                    if (confirmLoading) return;
+                    setConfirmOpen(false);
+                    setPlanToDelete(null);
+                }}
+            />
         </div>
     );
 }
